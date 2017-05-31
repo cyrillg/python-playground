@@ -1,0 +1,5 @@
+virtualenv
+virtualenvwrapper
+numpy
+matplotlib
+scipy

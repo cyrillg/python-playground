@@ -1,20 +1,10 @@
 #!/usr/bin/env python
 
-from numpy import array, ones, cos, sin, pi, vstack
+from numpy import array, ones, cos, sin, pi, vstack, asarray, rad2deg
+from scipy.integrate import odeint
 from matplotlib.pyplot import *
-
-def draw_cart(x, col='darkblue', r=1):
-    '''Draws a cart from:
-        - state x = [x, y, heading]
-        - color col
-        - scale factor r
-      '''
-    x = x.flatten()
-    cart_shape = [[1,-1,0,0,-1,-1,0,0,-1,1,0,0,3,3,0],
-                  [-2,-2,-2,-1,-1,1,1,2,2,2,2,1,0.5,-0.5,-1]]
-    M = r*array(cart_shape)
-    M = transform_pattern(M, x[0], x[1], x[2])
-    plot(M[0], M[1], col,2)
+from matplotlib.animation import *
+import time
 
 def transform_pattern(M, x, y, th):
     '''Performs the transformation on pattern M '''
