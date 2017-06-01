@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from numpy import array, ones, cos, sin, pi, vstack, asarray, rad2deg
+from numpy import array, ones, cos, sin, pi, vstack, asarray, rad2deg, dot
 from scipy.integrate import odeint
 from matplotlib.pyplot import *
 from matplotlib.animation import *
