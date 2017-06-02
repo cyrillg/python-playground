@@ -32,11 +32,13 @@ class Cart:
         self.L = L
         self.r = r
 
-        self.time_elapsed = 0.
+        self.t = 0.
         self.prev_x = 0.
         self.prev_t = 0.
-        self.base_shape = [[1,-1,0,0,-1,-1,0,0,-1,1,0,0,3,3,0],
-                           [-2,-2,-2,-1,-1,1,1,2,2,2,2,1,0.5,-0.5,-1]]
+        self.base_shape = [[0.25,-0.25,0,0,-0.25,-0.25,0,0,-0.25,0.25,
+                                                            0,0,0.85,0.85,0],
+                           [-0.5,-0.5,-0.5,-0.25,-0.25,0.25,0.25,0.5,0.5,
+                                            0.5,0.5,0.25,0.125,-0.125,-0.25]]
 
     def update_shape(self, col='darkblue'):
         '''Update the ddrawing of the cart using:
@@ -45,57 +47,35 @@ class Cart:
             - scale factor r
         '''
         p = self.p.flatten()
-        M = self.r*array(self.base_shape)
+        M = self.L*array(self.base_shape)
         M = transform_pattern(M, p[0], p[1], p[2])
         self.shape = M
 
-    #def dp_dt(self, p, t, w_l, w_r):
-    #    '''Derivative of the state'''
-    #    dpdt = np.zeros_like(p)
-
-    #    dpdt[0] = 
-    #    dpdt[1] = 
-    #    dpdt[2] = 
-
-    #    return dpdt
-
-    def step(self, dt):
+    def step(self, u, dt):
         '''Execute one time step of length dt and update state'''
-        u = array([0.30, 0.15]) # [w_r, w_l]
-        p = self.p
+        p = self.p.flatten()
 
         if u[0]==u[1]:
-            dp = array([self.r*u[0]*cos(p[2]),
-                        self.r*u[0]*sin(p[2]),
-                        0.])
+            dp = array([[self.r*u[0]*cos(p[2])],
+                        [self.r*u[0]*sin(p[2])],
+                        [0.]])
         else:
             R = self.L*(u[0] + u[1]) / (2*(u[0] - u[1]))
-            a = (u[0] - u[1])/self.L
-            print(R, a)
+            a = self.r*(u[0] - u[1])/self.L
 
-            #self.p = odeint(self.dp_dt, self.p, [0, dt], args=u)[1]
-            #dp = array([R*(sin(p[2]) - sin(p[2]+a*dt)),
-            #            R*(-cos(p[2]) + cos(p[2]+a*dt)),
-            #            a*dt])
-            IP = [R*sin(p[2][0]), -R*cos(p[2][0])]
-
+            IP = array([[ R*sin(p[2])],
+                        [-R*cos(p[2])]])
             M = array([[cos(a*dt), -sin(a*dt), 0],
                        [sin(a*dt), cos(a*dt), 0],
                        [0, 0, 1]])
+            U = vstack((IP,np.zeros(1)))
+            dp = M @ U + vstack((-IP, array([a*dt])))
 
-            U = vstack((IP,0.0))
-
-            print("u: ",U)
-
-            U = M @ U
-            dp = U + array([[-IP[0]],
-                           [-IP[1]],
-                           [a*dt]])
-
-        self.p = p + dp
+        self.p = self.p + dp
+        self.p[2][0] = normalize(self.p[2][0])
 
         self.update_shape()
-        self.time_elapsed += dt
+        self.t += dt
 
 class Animation:
     def __init__(self, cart, dt, t_end, sim_speed):
@@ -107,9 +87,11 @@ class Animation:
         ax.grid()
 
         self.line, = ax.plot([], [], lw=2)
-        self.x_text = ax.text(0.02, 0.95, '', transform=ax.transAxes)
-        self.y_text = ax.text(0.02, 0.90, '', transform=ax.transAxes)
-        self.th_text = ax.text(0.02, 0.85, '', transform=ax.transAxes)
+        self.speed_text = ax.text(0.75, 0.950, '', transform=ax.transAxes)
+        self.t_text = ax.text(0.02, 0.95, '', transform=ax.transAxes)
+        self.x_text = ax.text(0.02, 0.90, '', transform=ax.transAxes)
+        self.y_text = ax.text(0.02, 0.85, '', transform=ax.transAxes)
+        self.th_text = ax.text(0.02, 0.80, '', transform=ax.transAxes)
 
         t0 = time.time()
         self.animate(0, dt, t_end)
@@ -130,28 +112,30 @@ class Animation:
     def init_anim(self):
         '''Initialize animation'''
         self.line.set_data([], [])
+        self.speed_text.set_text("Speed: x{}".format(sim_speed))
+        self.t_text.set_text("")
         self.x_text.set_text("")
         self.y_text.set_text("")
         self.th_text.set_text("")
-        return self.line, self.x_text, self.y_text, self.th_text,
+        return self.line, self.t_text, self.x_text, self.y_text, self.th_text,
 
     def animate(self, i, dt, t_end):
         '''Animation step'''
-        if self.cart.time_elapsed<t_end:
-            self.cart.step(dt)
-        else:
-            print(time.time()-self.t_start)
+        u = [-0.30, 0.30] # [w_r, w_l]
+        if self.cart.t<t_end:
+            self.cart.step(u, dt)
 
         self.line.set_data(cart.shape[0], cart.shape[1])
+        self.t_text.set_text("t = %.1f" % cart.t)
         self.x_text.set_text("x = %.1f" % cart.p[0])
         self.y_text.set_text("y = %.1f" % cart.p[1])
         self.th_text.set_text("theta = %.1f" % rad2deg(float(cart.p[2])))
-        return self.line, self.x_text, self.y_text, self.th_text,
+        return self.line, self.t_text, self.x_text, self.y_text, self.th_text,
 
 
 if __name__=="__main__":
     cart = Cart([0., 0., 0.])
-    dt = 1./50.
+    dt = 1./30.
     sim_speed = 1.
     t_end = 30.
 

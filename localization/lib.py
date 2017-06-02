@@ -13,3 +13,10 @@ def transform_pattern(M, x, y, th):
     R = array([[cos(th), -sin(th),x],
                [sin(th), cos(th),y]])
     return(R @ M2)
+
+def normalize(angle):
+    '''Normalizes an angle in radians between -pi and pi'''
+    angle = angle%(2*pi)
+    if angle>pi:
+        angle -= 2*pi
+    return angle
