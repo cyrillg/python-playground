@@ -13,7 +13,10 @@ from lib import *
 from cart_model import Cart
 
 class Simulator:
-    def __init__(self, cart, f_sim, t_end, sim_speed):
+    def __init__(self, cart,
+                 commands={5.: (0.30, -0.30)},
+                 f_sim=1./30.,
+                 sim_speed=1.):
         self.cart = cart
 
         fig = figure()
@@ -37,10 +40,16 @@ class Simulator:
         self.t = self.t_start
         self.sim_time = 0
 
+        self.commands = commands
+        self.command_ts = sorted(list(commands.keys()))
+        print(self.command_ts)
+        self.current_cmd_end = self.command_ts[0]
+        self.cmd_idx = 0
+        self.last_cmd_end = self.command_ts[-1]
+
         ani = FuncAnimation(fig,
                             self.step,
                             frames=300,
-                            fargs=(t_end,),
                             interval=interval,
                             blit=True,
                             init_func=self.init_sim)
@@ -57,11 +66,15 @@ class Simulator:
         self.th_text.set_text("")
         return self.line, self.t_text, self.x_text, self.y_text, self.th_text,
 
-    def step(self, i, t_end):
+    def step(self, i):
         '''Animation step'''
-        u = [-0.30, 0.30] # [w_r, w_l]
+        print(self.cmd_idx)
         t = time.time()
-        if self.sim_time<t_end:
+        if self.sim_time<self.last_cmd_end:
+            if self.sim_time>self.current_cmd_end:
+                self.cmd_idx += 1
+                self.current_cmd_end = self.command_ts[self.cmd_idx]
+            u = self.commands[self.current_cmd_end]
             dt = t - self.t
             self.cart.step(u, self.sim_speed*dt)
             self.t = t
@@ -79,7 +92,12 @@ class Simulator:
 if __name__=="__main__":
     cart = Cart([0., 0., 0.])
     f_sim = 1./30.
-    sim_speed = 2.
+    sim_speed = 1.
     t_end = 200.
 
-    Simulator(cart, f_sim, t_end, sim_speed)
+    commands = {5.: (0.10, 0.10),
+                10.: (0.20, 0.),
+                15.: (-0.10, -0.10),
+                20.: (-0.50, 0.50)}
+
+    Simulator(cart, commands, f_sim, sim_speed)
