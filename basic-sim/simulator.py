@@ -23,12 +23,11 @@ class Simulator:
         self.cart = cart # Model to simulate
         self.controller = controller # Controller to the system
         self.sim_attr = {"speed": sim_speed,
-                         "start": time.time(),
                          "end": t_end,
                          "t": 0} # Description of the simulation
 
-        self.t = self.sim_attr["start"]
-        self.sim_t = 0
+        self.t = time.time()
+        self.sim_t = 0.0
 
         # ----------------------------------------------------------------
         # Set up the command source (series of inputs or custom Controller)
@@ -63,24 +62,13 @@ class Simulator:
         interval = f_sim*1000
         ani = FuncAnimation(fig,
                             self.step,
+                            frames=300,
                             interval=interval,
-                            blit=True,
-                            init_func=self.init_sim)
+                            blit=False)
         show()
-
-    def init_sim(self):
-        '''Initialize animation'''
-        self.line.set_data([], [])
-        self.speed_text.set_text("Speed: x{}".format(self.sim_attr["speed"]))
-        self.t_text.set_text("")
-        self.x_text.set_text("")
-        self.y_text.set_text("")
-        self.th_text.set_text("")
-        return self.line, self.t_text, self.x_text, self.y_text, self.th_text,
 
     def step(self, i):
         '''Simulation step'''
-        t = time.time()
         if self.sim_t<self.sim_attr["end"]:
             # ----------------------------------------------------------------
             # Select current control inputs
@@ -94,33 +82,33 @@ class Simulator:
 
             # ----------------------------------------------------------------
             # Compute the new system state
-            dt = t - self.t
-            sim_dt = self.sim_attr["speed"]*dt
+            t = time.time()
+            sim_dt = self.sim_attr["speed"]*(t - self.t)
 
-            self.cart.step(u, self.sim_attr["speed"]*dt)
+            self.cart.step(u, sim_dt)
             self.t = t
             self.sim_t += sim_dt
 
-        # ----------------------------------------------------------------
-        # Update display
-        self.line.set_data(cart.shape[0], cart.shape[1])
-        self.t_text.set_text("t = %.1f" % self.sim_t)
-        self.x_text.set_text("x = %.1f" % cart.p[0])
-        self.y_text.set_text("y = %.1f" % cart.p[1])
-        self.th_text.set_text("theta = %.1f" % rad2deg(float(cart.p[2])))
-        return self.line, self.t_text, self.x_text, self.y_text, self.th_text,
+            # ----------------------------------------------------------------
+            # Update display
+            self.line.set_data(cart.shape[0], self.cart.shape[1])
+            self.t_text.set_text("t = %.1f" % (self.sim_t))
+            self.x_text.set_text("x = %.2f" % self.cart.p[0])
+            self.y_text.set_text("y = %.2f" % self.cart.p[1])
+            self.th_text.set_text("theta = %.1f" % rad2deg(float(self.cart.p[2])))
+            return self.line, self.t_text, self.x_text, self.y_text, self.th_text,
 
 
 if __name__=="__main__":
-    f_sim = 1./30.
-    sim_speed = 1.
+    f_sim = 1./20.
+    sim_speed = 6.
     t_end = 200.
 
     cart = Cart([0., 0., 0.])
     commands = {5.: (0.10, 0.10),
-                10.: (0.20, 0.)}#,
-               # 15.: (-0.10, -0.10),
-               # 20.: (-0.50, 0.50)}
+                10.: (0.40, 0.10),
+                15.: (-0.10, -0.10),
+                20.: (-0.50, 0.50)}
 
     Simulator(cart,
               commands=commands,
