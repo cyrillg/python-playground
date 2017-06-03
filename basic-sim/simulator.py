@@ -95,8 +95,8 @@ class Simulator:
             self.t_text.set_text("t = %.1f" % (self.sim_t))
             self.x_text.set_text("x = %.2f" % self.cart.p[0])
             self.y_text.set_text("y = %.2f" % self.cart.p[1])
-            self.th_text.set_text("theta = %.1f" % rad2deg(float(self.cart.p[2])))
-            return self.line, self.t_text, self.x_text, self.y_text, self.th_text,
+            self.th_text.set_text("theta = %.1f"%rad2deg(float(self.cart.p[2])))
+            return self.line,self.t_text,self.x_text,self.y_text,self.th_text,
 
 
 if __name__=="__main__":

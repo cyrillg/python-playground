@@ -67,5 +67,6 @@ class Cart:
     def step(self, u, dt):
         '''Execute one time step of length dt and update state'''
         self.p = odeint(self.dp_dt, self.p, [0, dt], args=u)[1]
+        self.p[2] = normalize(self.p[2])
 
         self.update_shape()
