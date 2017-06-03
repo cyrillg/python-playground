@@ -1,5 +1,6 @@
 '''
-Simulation of a kinematic model for differential drive mobile robot
+Simulator class for the kinematic model of differential drive mobile robot
+described in cart_model.py
 
 author: Cyrill Guillemot
 email: cyrill.guillemot@gmail.com
@@ -10,7 +11,6 @@ license: GNU GPL
 #!/usr/bin/env python
 
 from lib import *
-from cart_model import Cart
 
 class Simulator:
     def __init__(self, cart,
@@ -91,26 +91,9 @@ class Simulator:
 
             # ----------------------------------------------------------------
             # Update display
-            self.line.set_data(cart.shape[0], self.cart.shape[1])
+            self.line.set_data(self.cart.shape[0], self.cart.shape[1])
             self.t_text.set_text("t = %.1f" % (self.sim_t))
             self.x_text.set_text("x = %.2f" % self.cart.p[0])
             self.y_text.set_text("y = %.2f" % self.cart.p[1])
             self.th_text.set_text("theta = %.1f"%rad2deg(float(self.cart.p[2])))
             return self.line,self.t_text,self.x_text,self.y_text,self.th_text,
-
-
-if __name__=="__main__":
-    f_sim = 1./20.
-    sim_speed = 6.
-    t_end = 200.
-
-    cart = Cart([0., 0., 0.])
-    commands = {5.: (0.10, 0.10),
-                10.: (0.40, 0.10),
-                15.: (-0.10, -0.10),
-                20.: (-0.50, 0.50)}
-
-    Simulator(cart,
-              commands=commands,
-              f_sim=f_sim,
-              sim_speed=sim_speed)
