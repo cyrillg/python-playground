@@ -28,6 +28,7 @@ class Simulator:
 
         self.t = time.time()
         self.sim_t = 0.0
+        self.sim_end = False
 
         # ----------------------------------------------------------------
         # Set up the command source (series of inputs or custom Controller)
@@ -69,11 +70,11 @@ class Simulator:
 
     def step(self, i):
         '''Simulation step'''
-        if self.sim_t<self.sim_attr["end"]:
+        if not self.sim_end:
             # ----------------------------------------------------------------
             # Select current control inputs
             if self.controller:
-                u = (0.10, 0.10)
+                u = self.controller.generate_cmd(self.cart.p)
             else:
                 if self.sim_t>self.current_cmd_end:
                     self.cmd_idx += 1
@@ -88,6 +89,13 @@ class Simulator:
             self.cart.step(u, sim_dt)
             self.t = t
             self.sim_t += sim_dt
+
+            # ----------------------------------------------------------------
+            # Check if simulation is finished
+            if self.controller:
+                self.sim_end = self.controller.is_end
+            else:
+                self.sim_end = self.sim_t>=self.sim_attr["end"]
 
             # ----------------------------------------------------------------
             # Update display
