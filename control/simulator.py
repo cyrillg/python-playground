@@ -13,9 +13,9 @@ license: GNU GPL
 from lib import *
 
 class Simulator:
-    def __init__(self, cart,
-                 commands={5.: (0.30, -0.30)},
-                 controller=None,
+    def __init__(self,
+                 cart,
+                 controller,
                  t_end=10.,
                  f_sim=1./30.,
                  sim_speed=1.):
@@ -31,29 +31,18 @@ class Simulator:
         self.sim_end = False
 
         # ----------------------------------------------------------------
-        # Set up the command source (series of inputs or custom Controller)
-        # If specified, a Controller has precedence and the series of
-        # inputs will be discarded
-        if not self.controller:
-            self.commands = commands
-            self.commands_ts = sorted(list(commands.keys()))
-            self.current_cmd_end = self.commands_ts[0]
-            self.cmd_idx = 0
-            self.sim_attr["end"] = self.commands_ts[-1]
-
-        # ----------------------------------------------------------------
         # Create display elements
         fig = figure()
         ax = fig.add_subplot(111,
                              aspect='equal',
                              autoscale_on=False,
                              xlim=(-10, 10),
-                             ylim=(-5, 5))
+                             ylim=(-7, 10))
         ax.grid()
 
-        self.cart_line, = ax.plot([], [], lw=2)
         self.path_line = ax.scatter([e[0] for e in self.controller.path],
-                                     [e[1] for e in self.controller.path])
+                                    [e[1] for e in self.controller.path])
+        self.cart_line, = ax.plot([], [], lw=2)
         self.speed_text = ax.text(0.75, 0.950, '', transform=ax.transAxes)
         self.t_text = ax.text(0.02, 0.95, '', transform=ax.transAxes)
         self.x_text = ax.text(0.02, 0.90, '', transform=ax.transAxes)
@@ -74,14 +63,8 @@ class Simulator:
         '''Simulation step'''
         if not self.sim_end:
             # ----------------------------------------------------------------
-            # Select current control inputs
-            if self.controller:
-                u = self.controller.generate_cmd(self.cart.p)
-            else:
-                if self.sim_t>self.current_cmd_end:
-                    self.cmd_idx += 1
-                    self.current_cmd_end = self.commands_ts[self.cmd_idx]
-                u = self.commands[self.current_cmd_end]
+            # Generate current control inputs
+            u = self.controller.generate_cmd(self.cart.p)
 
             # ----------------------------------------------------------------
             # Compute the new system state
@@ -94,20 +77,18 @@ class Simulator:
 
             # ----------------------------------------------------------------
             # Check if simulation is finished
-            if self.controller:
-                self.sim_end = self.controller.is_end
-            else:
-                self.sim_end = self.sim_t>=self.sim_attr["end"]
+            self.sim_end = self.controller.is_end or (self.sim_t
+                                                      >self.sim_attr["end"])
 
             # ----------------------------------------------------------------
             # Update display
-            if self.controller:
-                self.path_line.set_color(update_path_colours(self.controller.path,
-                                                             self.controller.wp_idx,
-                                                             self.sim_end))
+            self.path_line.set_color(update_path_colours(self.controller.path,
+                                                         self.controller.wp_idx,
+                                                         self.sim_end))
             self.cart_line.set_data(self.cart.shape[0], self.cart.shape[1])
             self.t_text.set_text("t = %.1f" % (self.sim_t))
             self.x_text.set_text("x = %.2f" % self.cart.p[0])
             self.y_text.set_text("y = %.2f" % self.cart.p[1])
             self.th_text.set_text("theta = %.1f"%rad2deg(float(self.cart.p[2])))
-            return self.cart_line,self.t_text,self.x_text,self.y_text,self.th_text,
+            return (self.path_line, self.cart_line, self.t_text, self.x_text,
+                    self.y_text,self.th_text,)
