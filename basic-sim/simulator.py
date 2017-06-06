@@ -51,7 +51,9 @@ class Simulator:
                              ylim=(-5, 5))
         ax.grid()
 
-        self.line, = ax.plot([], [], lw=2)
+        self.cart_line, = ax.plot([], [], lw=2)
+        self.path_line = ax.scatter([e[0] for e in self.controller.path],
+                                     [e[1] for e in self.controller.path])
         self.speed_text = ax.text(0.75, 0.950, '', transform=ax.transAxes)
         self.t_text = ax.text(0.02, 0.95, '', transform=ax.transAxes)
         self.x_text = ax.text(0.02, 0.90, '', transform=ax.transAxes)
@@ -99,9 +101,13 @@ class Simulator:
 
             # ----------------------------------------------------------------
             # Update display
-            self.line.set_data(self.cart.shape[0], self.cart.shape[1])
+            if self.controller:
+                self.path_line.set_color(update_path_colours(self.controller.path,
+                                                             self.controller.wp_idx,
+                                                             self.sim_end))
+            self.cart_line.set_data(self.cart.shape[0], self.cart.shape[1])
             self.t_text.set_text("t = %.1f" % (self.sim_t))
             self.x_text.set_text("x = %.2f" % self.cart.p[0])
             self.y_text.set_text("y = %.2f" % self.cart.p[1])
             self.th_text.set_text("theta = %.1f"%rad2deg(float(self.cart.p[2])))
-            return self.line,self.t_text,self.x_text,self.y_text,self.th_text,
+            return self.cart_line,self.t_text,self.x_text,self.y_text,self.th_text,

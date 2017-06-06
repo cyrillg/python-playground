@@ -18,7 +18,7 @@ f_sim = 1./20.
 sim_speed = 1.
 t_end = 200.
 
-cart = Cart([0., 0., pi/4])
+cart = Cart([-3., 5., pi/4])
 controller = Controller(cart)
 commands = {5.: (0.10, 0.10),
             10.: (0.40, 0.10),

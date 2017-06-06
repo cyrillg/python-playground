@@ -18,7 +18,8 @@ class Controller:
                        (3.0, -1.0),
                        (0.0, 0.0)]):
         self.path = path
-        self.K = 0.15
+        self.K = 1.
+        self.v = 1.
         self.L = cart.L
         self.r = cart.r
         self.is_end = False
@@ -39,7 +40,7 @@ class Controller:
         if not self.is_end:
             wp = self.current_wp
             th_ref = arctan2(wp[1]-p[1],wp[0]-p[0])
-            v = 0.1
+            v = self.v
             th_err = normalize(th_ref-p[2])
             print(rad2deg(th_err))
             w = self.K*th_err
@@ -50,6 +51,7 @@ class Controller:
             u1 = 0
 
         return (u0, u1)
+
 
     def is_end(self, p):
         dist = sqrt(pow(p[0]-self.current_wp[0],2)+pow(p[1]-self.current_wp[1],2))

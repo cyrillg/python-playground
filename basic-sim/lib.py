@@ -21,3 +21,16 @@ def normalize(angle):
     if angle>pi:
         angle -= 2*pi
     return angle
+
+def update_path_colours(path, stage, sim_end=False):
+    # Create a colormap for red, green and blue and a norm to color
+    # f' < -0.5 red, f' > 0.5 blue, and the rest green
+    cmap = ['g' for e in path]
+    cmap[stage-1] = 'r'
+    for i in range(stage,len(path)):
+        cmap[i] = 'b'
+    if stage==len(path) and sim_end:
+        cmap[-1] = 'g'
+
+    return cmap
+
