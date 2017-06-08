@@ -10,6 +10,7 @@ license: GNU GPL
 #!/usr/bin/env python
 
 from lib import *
+from sensors import PerfectSensor
 
 class Cart:
     '''Cart class
@@ -25,6 +26,10 @@ class Cart:
                  L=1.0,
                  r=1.0):
         self.p = asarray(p0, dtype='float')
+        self.prev = asarray(p0, dtype='float')
+
+        # Sensors
+        self.sensors = [PerfectSensor()]
 
         # Cart parameters
         self.L = L
@@ -38,10 +43,9 @@ class Cart:
                                             0.5,0.5,0.25,0.125,-0.125,-0.25]]
         self.shape = self.base_shape
 
-    def update_shape(self, col='darkblue'):
+    def update_shape(self):
         '''Update the ddrawing of the cart using:
             - state x = [x, y, heading]
-            - color col
             - scale factor r
         '''
         p = self.p.flatten()
@@ -66,7 +70,15 @@ class Cart:
 
     def step(self, u, dt):
         '''Execute one time step of length dt and update state'''
+        self.p_prev = self.p
+
         self.p = odeint(self.dp_dt, self.p, [0, dt], args=u)[1]
         self.p[2] = normalize(self.p[2])
 
         self.update_shape()
+
+    def sense(self):
+        for sensor in self.sensors:
+            sensor.update_readings(self.p)
+
+        return [sensor.current_readings for sensor in self.sensors]
