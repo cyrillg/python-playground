@@ -1,6 +1,6 @@
 '''
 Simulator class for the kinematic model of differential drive mobile robot
-described in cart_model.py
+described in model.py
 
 author: Cyrill Guillemot
 email: cyrill.guillemot@gmail.com
@@ -15,38 +15,53 @@ from controller import OpenLoopCtrl
 from observer import IdealObs
 
 class Simulator:
+    '''Class executing the simulation of the specified parts
+
+       Inputs:
+        - cart: Model object, decribing the plant
+        - controller: Object used to generate the commands to follow a given
+                      reference (wheel speed sequence, path...)
+        - observer: state estimator of the system
+        - sim_timeout: timeout after which the simulation will stop, whether or
+                       not the controller has reached the final target
+        - f_sim: simulation step
+        - sim_speed: simulation speed
+    '''
     def __init__(self,
                  cart,
                  controller=None,
                  observer=None,
-                 commands={},
-                 t_end=10.,
-                 f_sim=1./30.,
+                 sim_timeout=300.,
+                 f_sim=1./20.,
                  sim_speed=1.):
+
+
+        # ----------------------------------------------------------------
+        # Set up model, controller, and observer
 
         self.cart = cart # Model to simulate
 
         if controller:
-            self.controller = controller # Controller to the system
+            self.controller = controller # Specified
         else:
-            self.controller = OpenLoopCtrl(self.cart,
-                                           reference=commands)
+            self.controller = OpenLoopCtrl(self.cart) # Default
 
         if observer:
-            self.observer = observer
+            self.observer = observer # Specified
         else:
-            self.observer = IdealObs(self.cart)
+            self.observer = IdealObs(self.cart) # Default
 
+        # ----------------------------------------------------------------
+        # Simulation attributes
         self.sim_attr = {"speed": sim_speed,
-                         "end": t_end,
-                         "t": 0.,
-                         "f_sim": f_sim} # Description of the simulation
+                         "timeout": sim_timeout,
+                         "f_sim": f_sim,
+                         }
 
         self.t = time.time()
         self.sim_t = 0.
-        self.sim_end = False
-
-        self.loop_timing = 0.
+        self.sim_complete = False
+        self.loop_dt = 0.
 
         # ----------------------------------------------------------------
         # Create display elements
@@ -84,8 +99,9 @@ class Simulator:
 
     def step(self, i):
         '''Simulation step'''
-        if not self.sim_end:
+        if not self.sim_complete:
             t1 = time.time()
+
             # ----------------------------------------------------------------
             # Generate current control inputs
             u = self.controller.generate_cmd(self.observer.p, self.sim_t)
@@ -95,17 +111,16 @@ class Simulator:
             t = time.time()
             sim_dt = self.sim_attr["speed"]*(t - self.t)
 
-            self.cart.step(u, sim_dt)
-
-            self.observer.update_est(self.cart.sense(), sim_dt)
-
+            self.cart.step(u, sim_dt) # Plant step
+            self.observer.update_est(self.cart.sense(),
+                                     sim_dt) # New state estimate
             self.t = t
             self.sim_t += sim_dt
 
             # ----------------------------------------------------------------
             # Check if simulation is finished
-            self.sim_end = self.controller.is_end or (self.sim_t
-                                                      >self.sim_attr["end"])
+            self.sim_complete = (self.controller.is_end
+                                 or (self.sim_t>self.sim_attr["timeout"]))
 
             # ----------------------------------------------------------------
             # Update display
@@ -120,10 +135,13 @@ class Simulator:
             if self.controller.type in ['closed-loop']:
                 new_colours = draw_path(self.controller.path,
                                         self.controller.wp_idx,
-                                        self.sim_end)
+                                        self.sim_complete)
                 self.lines[7].set_color(new_colours)
 
-            self.loop_timing = time.time() - t1
-            if self.loop_timing>self.sim_attr["f_sim"]:
-                print("WARNING: Loop timing: {}".format(t2-t1))
+            # ----------------------------------------------------------------
+            # Check for jam in the simulation
+            self.loop_dt = time.time() - t1
+            if self.loop_dt>self.sim_attr["f_sim"]:
+                print("/!\ Loop duration exceeds timestep: {}".format(t2-t1))
+
             return self.lines

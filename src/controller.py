@@ -1,5 +1,5 @@
 '''
-Controller class for waypoint following
+Definition of controller classes
 
 author: Cyrill Guillemot
 email: cyrill.guillemot@gmail.com
@@ -12,6 +12,16 @@ license: GNU GPL
 from lib import *
 
 class OpenLoopCtrl:
+    '''Open loop controller definition
+
+       Inputs:
+        - cart: Model object. Model parameters are used in the
+                command generation
+        - reference: sequence of command inputs (w_r, w_l) where w_r, w_l are
+                     respectively the right and left wheel angular speeds. Must
+                     be specified as a dictionnary of tuples indexed with the
+                     time each specific command ends.
+    '''
     def __init__(self,
                  cart,
                  reference={5.: (0.30, 0.30),
@@ -46,6 +56,14 @@ class OpenLoopCtrl:
 
 
 class ClosedLoopCtrl:
+    '''Closed loop controller definition
+
+       Inputs:
+        - cart: Model object. Model parameters are used in the
+                command generation
+        - reference: sequence of (x, y) waypoints. Must be specified as a
+                     list of tuples.
+    '''
     def __init__(self,
                  cart,
                  reference=[(2.0, 0.0),
@@ -96,5 +114,7 @@ class ClosedLoopCtrl:
 
 
     def is_end(self, p):
-        dist = sqrt(pow(p[0]-self.current_wp[0],2)+pow(p[1]-self.current_wp[1],2))
+        dist = sqrt(pow(p[0]-self.current_wp[0],2)
+                    +pow(p[1]-self.current_wp[1],2))
+
         return dist<0.5

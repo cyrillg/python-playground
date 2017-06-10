@@ -13,6 +13,9 @@ from lib import *
 
 class PerfectSensor:
     '''PerfectSensor class
+
+       Detail:
+         Abstract sensor able to sense the complete state perfectly
     '''
     def __init__(self):
         self.current_readings = None
