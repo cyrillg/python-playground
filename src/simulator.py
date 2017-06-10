@@ -131,7 +131,7 @@ class Simulator:
             self.lines[3].set_text("t = %.1f" % (self.sim_t))
             self.lines[4].set_text("x = %.2f" % self.cart.p[0])
             self.lines[5].set_text("y = %.2f" % self.cart.p[1])
-            self.lines[6].set_text("theta = %.1f"%rad2deg(float(self.cart.p[2])))
+            self.lines[6].set_text("theta = %.1f"%rad2deg(self.cart.p[2]))
             if self.controller.type in ['closed-loop']:
                 new_colours = draw_path(self.controller.path,
                                         self.controller.wp_idx,
