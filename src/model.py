@@ -10,24 +10,24 @@ license: GNU GPL
 #!/usr/bin/env python
 
 from lib import *
-from sensors import PerfectSensor
+from sensor import PerfectSensor
 
 class Cart:
-    '''Cart class
+    ''' Cart class
 
-       Inputs:
-        - p0: initial state [x, y, theta], with
-           * x, y: planar position
-           * theta: angular position in radians
-        - L: axle length
-        - r: wheel diameter
+        Inputs:
+          - p0: initial state [x, y, theta], with
+             * x, y: planar position
+             * theta: angular position in radians
+          - L: axle length
+          - r: wheel diameter
     '''
     def __init__(self,
                  p0=[0., 0., 0.],
                  L=1.0,
                  r=1.0):
-        self.p = asarray(p0, dtype='float')
-        self.prev = asarray(p0, dtype='float')
+        self.p = asarray(p0, dtype="float")
+        self.prev = asarray(p0, dtype="float")
 
         # Sensors
         self.sensors = [PerfectSensor()]
@@ -45,11 +45,11 @@ class Cart:
         self.shape = self.base_shape
 
     def update_shape(self):
-        '''Update the ddrawing of the cart
+        ''' Update the drawing of the cart
 
-           Inputs:
-            - state x = [x, y, heading]
-            - scale factor r
+            Inputs:
+              - state x = [x, y, heading]
+              - scale factor r
         '''
         p = self.p.flatten()
         M = self.L*array(self.base_shape)
@@ -57,11 +57,12 @@ class Cart:
         self.shape = M
 
     def dp_dt(self, p, t, u0, u1):
-        '''Derivative of the state
+        ''' Derivative of the state
 
-           Inputs:
-            - p: state of the cart
-            - u0, u1: respectively right and left wheel angular speeds'''
+            Inputs:
+              - p: state of the cart
+              - u0, u1: respectively right and left wheel angular speeds
+        '''
         dpdt = np.zeros_like(p)
 
         v = self.r/2 * (u0 + u1)
@@ -74,11 +75,12 @@ class Cart:
         return dpdt
 
     def step(self, u, dt):
-        '''Execute one time step of length dt and update state
+        ''' Execute one time step of length dt and update state
 
-           Inputs:
-            - u: current control inputs
-            - dt: duration u is applied'''
+            Inputs:
+              - u: current control inputs
+              - dt: duration u is applied
+        '''
         self.p_prev = self.p
 
         self.p = odeint(self.dp_dt, self.p, [0, dt], args=u)[1]
@@ -87,7 +89,8 @@ class Cart:
         self.update_shape()
 
     def sense(self):
-        '''Gather current readings from the model's sensors'''
+        ''' Gather current readings from the model's sensors
+        '''
         for sensor in self.sensors:
             sensor.update_readings(self.p)
 

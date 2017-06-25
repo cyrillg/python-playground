@@ -15,17 +15,17 @@ from controller import OpenLoopCtrl
 from observer import IdealObs
 
 class Simulator:
-    '''Class executing the simulation of the specified parts
+    ''' Class executing the simulation of the specified parts
 
-       Inputs:
-        - cart: Model object, decribing the plant
-        - controller: Object used to generate the commands to follow a given
-                      reference (wheel speed sequence, path...)
-        - observer: state estimator of the system
-        - sim_timeout: timeout after which the simulation will stop, whether or
-                       not the controller has reached the final target
-        - f_sim: simulation step
-        - sim_speed: simulation speed
+        Inputs:
+          - cart: Model object, decribing the plant
+          - controller: Object used to generate the commands to follow a given
+                        reference (wheel speed sequence, path...)
+          - observer: state estimator of the system
+          - sim_timeout: timeout after which the simulation will stop, whether or
+                         not the controller has reached the final target
+          - f_sim: simulation step
+          - sim_speed: simulation speed
     '''
     def __init__(self,
                  cart,
@@ -67,24 +67,24 @@ class Simulator:
         # Create display elements
         fig = figure()
         ax = fig.add_subplot(111,
-                             aspect='equal',
+                             aspect="equal",
                              autoscale_on=False,
                              xlim=(-10, 10),
                              ylim=(-7, 10))
         ax.grid()
 
-        self.lines = (ax.plot([], [], color='b', lw=2)[0],
-                      ax.plot([], [], color='r', lw=2)[0],
-                      ax.text(0.75, 0.950, '', transform=ax.transAxes),
-                      ax.text(0.02, 0.95, '', transform=ax.transAxes),
-                      ax.text(0.02, 0.90, '', transform=ax.transAxes),
-                      ax.text(0.02, 0.85, '', transform=ax.transAxes),
-                      ax.text(0.02, 0.80, '', transform=ax.transAxes))
+        self.lines = (ax.plot([], [], color="b", lw=2)[0],
+                      ax.plot([], [], color="r", lw=2)[0],
+                      ax.text(0.75, 0.950, "", transform=ax.transAxes),
+                      ax.text(0.02, 0.95, "", transform=ax.transAxes),
+                      ax.text(0.02, 0.90, "", transform=ax.transAxes),
+                      ax.text(0.02, 0.85, "", transform=ax.transAxes),
+                      ax.text(0.02, 0.80, "", transform=ax.transAxes))
 
-        if self.controller.type in ['closed-loop']:
+        if self.controller.type in ["closed-loop"]:
             self.lines += (ax.scatter([e[0] for e in self.controller.path],
                                       [e[1] for e in self.controller.path],
-                                      marker='o',
+                                      marker="o",
                                       s=[100]*len(self.controller.path)),)
 
         # ----------------------------------------------------------------
@@ -98,7 +98,8 @@ class Simulator:
         show()
 
     def step(self, i):
-        '''Simulation step'''
+        ''' Simulation step
+        '''
         if not self.sim_complete:
             t1 = time.time()
 
@@ -132,7 +133,7 @@ class Simulator:
             self.lines[4].set_text("x = %.2f" % self.cart.p[0])
             self.lines[5].set_text("y = %.2f" % self.cart.p[1])
             self.lines[6].set_text("theta = %.1f"%rad2deg(self.cart.p[2]))
-            if self.controller.type in ['closed-loop']:
+            if self.controller.type in ["closed-loop"]:
                 new_colours = draw_path(self.controller.path,
                                         self.controller.wp_idx,
                                         self.sim_complete)

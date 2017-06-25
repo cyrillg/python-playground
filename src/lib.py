@@ -8,12 +8,12 @@ from matplotlib.animation import *
 import time
 
 def transform_pattern(M, x, y, th):
-    '''Perform the transformation on pattern M
+    ''' Perform the transformation on pattern M
 
-       Inputs:
-        - M: base shape
-        - x,y: translation coordinates
-        - th: rotation angle
+        Inputs:
+          - M: base shape
+          - x,y: translation coordinates
+          - th: rotation angle
     '''
     M1 = ones((1, len(M[1,:])))
     M2 = vstack((M, M1))
@@ -22,10 +22,10 @@ def transform_pattern(M, x, y, th):
     return(R @ M2)
 
 def normalize(angle):
-    '''Normalize an angle in radians between -pi and pi
+    ''' Normalize an angle in radians between -pi and pi
 
-       Inputs:
-        - angle: angle to normalize
+        Inputs:
+          - angle: angle to normalize
     '''
     angle = angle%(2*pi)
     if angle>pi:
@@ -33,25 +33,24 @@ def normalize(angle):
     return angle
 
 def draw_path(path, stage, sim_end=False):
-    '''Create the colormap for the path drawing
+    ''' Create the colormap for the path drawing
 
-       Legend:
-         Green: past waypoints
-         Red: current target waypoint
-         Blue: future waypoints
+        Legend:
+          Green: past waypoints
+          Red: current target waypoint
+          Blue: future waypoints
 
-       Inputs:
-        - path: list of waypoints
-        - stage: index of the current target waypoint
-        - sim_end: flag to indicate whether the last waypoint
-                   has been reached or not
+        Inputs:
+          - path: list of waypoints
+          - stage: index of the current target waypoint
+          - sim_end: flag to indicate whether the last waypoint
+                     has been reached or not
     '''
-    cmap = ['g' for e in path]
-    cmap[stage-1] = 'r'
+    cmap = ["g" for e in path]
+    cmap[stage-1] = "r"
     for i in range(stage,len(path)):
-        cmap[i] = 'b'
+        cmap[i] = "b"
     if stage==len(path) and sim_end:
-        cmap[-1] = 'g'
+        cmap[-1] = "g"
 
     return cmap
-

@@ -12,10 +12,10 @@ license: GNU GPL
 from lib import *
 
 class PerfectSensor:
-    '''PerfectSensor class
+    ''' PerfectSensor class
 
-       Detail:
-         Abstract sensor able to sense the complete state perfectly
+        Detail:
+          Abstract sensor able to sense the complete state perfectly
     '''
     def __init__(self):
         self.current_readings = None
