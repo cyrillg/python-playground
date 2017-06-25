@@ -1,6 +1,9 @@
 '''
 Definition of controller classes
 
+Controllers gather the functions used to generate the control inputs
+fed to the Model
+
 author: Cyrill Guillemot
 email: cyrill.guillemot@gmail.com
 website: http://serial-robotics.org

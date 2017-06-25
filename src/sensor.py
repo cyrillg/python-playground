@@ -1,5 +1,8 @@
 '''
-Definition of the simulated robot sensors.
+Definition of the simulated robot sensors
+
+Sensors gather functions generating simulated sensor readings from
+the current simulated robot state
 
 author: Cyrill Guillemot
 email: cyrill.guillemot@gmail.com

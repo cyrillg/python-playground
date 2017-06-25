@@ -1,3 +1,12 @@
+'''
+Definition of helper function
+
+author: Cyrill Guillemot
+email: cyrill.guillemot@gmail.com
+website: http://serial-robotics.org
+license: GNU GPL
+'''
+
 #!/usr/bin/env python
 
 from numpy import array, sqrt, ones, cos, sin, arctan2, pi, \

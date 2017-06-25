@@ -1,5 +1,8 @@
 '''
-Observer class
+Definition of observer classes
+
+Observers gather the functions used to compute the current estimate of the
+state
 
 author: Cyrill Guillemot
 email: cyrill.guillemot@gmail.com
