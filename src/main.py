@@ -10,13 +10,12 @@ license: GNU GPL
 #!/usr/bin/env python
 
 from lib import *
-from model import Cart
+from plant import Cart
 from simulator import Simulator
 from controller import OpenLoopCtrl, ClosedLoopCtrl
 
-f_sim = 1./30.
+p_sim = 1./30.
 sim_speed = 1.
-sim_timeout = 200.
 
 cart = Cart([-3., 5., -pi/4])
 
@@ -36,6 +35,6 @@ controller = ClosedLoopCtrl(cart,
                             reference=path)
 
 Simulator(cart,
-          f_sim=f_sim,
           controller=controller,
+          p_sim=p_sim,
           sim_speed=sim_speed)

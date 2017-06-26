@@ -24,7 +24,7 @@ class Simulator:
           - observer: state estimator of the system
           - sim_timeout: timeout after which the simulation will stop, whether or
                          not the controller has reached the final target
-          - f_sim: simulation step
+          - p_sim: simulation step
           - sim_speed: simulation speed
     '''
     def __init__(self,
@@ -32,7 +32,7 @@ class Simulator:
                  controller=None,
                  observer=None,
                  sim_timeout=300.,
-                 f_sim=1./20.,
+                 p_sim=1./20.,
                  sim_speed=1.):
 
 
@@ -55,7 +55,7 @@ class Simulator:
         # Simulation attributes
         self.sim_attr = {"speed": sim_speed,
                          "timeout": sim_timeout,
-                         "f_sim": f_sim,
+                         "p_sim": p_sim,
                          }
 
         self.t = time.time()
@@ -89,7 +89,7 @@ class Simulator:
 
         # ----------------------------------------------------------------
         # Launch simulation
-        interval = f_sim*1000
+        interval = p_sim*1000
         ani = FuncAnimation(fig,
                             self.step,
                             frames=300,
@@ -142,7 +142,7 @@ class Simulator:
             # ----------------------------------------------------------------
             # Check for jam in the simulation
             self.loop_dt = time.time() - t1
-            if self.loop_dt>self.sim_attr["f_sim"]:
+            if self.loop_dt>self.sim_attr["p_sim"]:
                 print("/!\ Loop duration exceeds timestep: {}".format(t2-t1))
 
             return self.lines
