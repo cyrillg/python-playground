@@ -45,12 +45,21 @@ class OpenLoopCtrl:
         else:
             self.t_end = 0.0
 
+    def transform(self, v, w):
+        ''' Transform linear and angular speed into wheel angular speeds
+        '''
+        u0 = (2*v + self.L*w) / (2*self.r)
+        u1 = (2*v - self.L*w) / (2*self.r)
+
+        return (u0, u1)
+
     def generate_cmd(self, p, t):
         if t<self.t_end:
             if t>self.current_cmd_end:
                 self.cmd_idx += 1
                 self.current_cmd_end = self.commands_ts[self.cmd_idx]
-            u = self.commands[self.current_cmd_end]
+            u = self.transform(self.commands[self.current_cmd_end][0],
+                               self.commands[self.current_cmd_end][1])
         else:
             u = (0, 0)
             self.is_end = True
