@@ -118,7 +118,7 @@ class Simulator:
             self.cart.step(u, sim_dt) # Plant step
 
             # ----------------------------------------------------------------
-            # [Observe]
+            # [Observe] Compute the new estimate of the system state
             self.observer.update_est(self.cart.sense(),
                                      sim_dt) # New state estimate
 
