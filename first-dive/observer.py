@@ -23,21 +23,15 @@ class IdealObs:
     def __init__(self, cart):
         self.cart = cart
         self.p = cart.p
-        self.base_shape = [[0.25,-0.25,0,0,-0.25,-0.25,0,0,-0.25,0.25,
-                                                            0,0,0.85,0.85,0],
-                           [-0.5,-0.5,-0.5,-0.25,-0.25,0.25,0.25,0.5,0.5,
-                                            0.5,0.5,0.25,0.125,-0.125,-0.25]]
+        self.L = cart.L
+        self.base_shape = cart.base_shape
         self.shape = self.base_shape
 
     def update_shape(self):
         ''' Update the drawing of the cart
-
-            Inputs:
-              - state x = [x, y, heading]
-              - scale factor r
         '''
         p = self.p.flatten()
-        M = self.cart.L*array(self.base_shape)
+        M = self.L*array(self.base_shape)
         M = transform_pattern(M, p[0], p[1], p[2])
         self.shape = M
 
