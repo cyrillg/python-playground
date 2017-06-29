@@ -14,7 +14,7 @@ from plant import Cart
 from simulator import Simulator
 from controller import OpenLoopCtrl, ClosedLoopCtrl
 
-cart = Cart([-3., 5., -pi/4])
+cart = Cart(p0=[-3., 5., -pi/4])
 
 #--------------------------------------------------------------------------
 # Open loop control
