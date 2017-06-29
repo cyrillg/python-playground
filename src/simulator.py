@@ -101,50 +101,53 @@ class Simulator:
         '''
         if self.sim_complete:
             self.anim._stop()
-            #close()
+        else:
+            t1 = time.time()
 
-        t1 = time.time()
+            # ----------------------------------------------------------------
+            # [Control] Generate current control inputs
+            u = self.controller.generate_cmd(self.observer.p, self.sim_t)
 
-        # ----------------------------------------------------------------
-        # Generate current control inputs
-        u = self.controller.generate_cmd(self.observer.p, self.sim_t)
+            # ----------------------------------------------------------------
+            # [Simulate] Compute the new system state
+            t = time.time()
+            sim_dt = self.sim_attr["speed"]*(t - self.t)
+            self.t = t
+            self.sim_t += sim_dt
 
-        # ----------------------------------------------------------------
-        # Compute the new system state
-        t = time.time()
-        sim_dt = self.sim_attr["speed"]*(t - self.t)
+            self.cart.step(u, sim_dt) # Plant step
 
-        self.cart.step(u, sim_dt) # Plant step
-        self.observer.update_est(self.cart.sense(),
-                                 sim_dt) # New state estimate
-        self.t = t
-        self.sim_t += sim_dt
+            # ----------------------------------------------------------------
+            # [Observe]
+            self.observer.update_est(self.cart.sense(),
+                                     sim_dt) # New state estimate
 
-        # ----------------------------------------------------------------
-        # Check if simulation is finished
-        self.sim_complete = (self.controller.is_end
-                             or (self.sim_t>self.sim_attr["timeout"]))
 
-        # ----------------------------------------------------------------
-        # Update display
-        self.lines[0].set_data(self.cart.shape[0],
-                               self.cart.shape[1])
-        self.lines[1].set_data(self.observer.shape[0],
-                               self.observer.shape[1])
-        self.lines[3].set_text("t = %.1f" % (self.sim_t))
-        self.lines[4].set_text("x = %.2f" % self.cart.p[0])
-        self.lines[5].set_text("y = %.2f" % self.cart.p[1])
-        self.lines[6].set_text("theta = %.1f"%rad2deg(self.cart.p[2]))
-        if self.controller.type in ["closed-loop"]:
-            new_colours = draw_path(self.controller.path,
-                                    self.controller.wp_idx,
-                                    self.sim_complete)
-            self.lines[7].set_color(new_colours)
+            # ----------------------------------------------------------------
+            # Check if simulation is finished
+            self.sim_complete = (self.controller.is_end
+                                 or (self.sim_t>self.sim_attr["timeout"]))
 
-        # ----------------------------------------------------------------
-        # Check for jam in the simulation
-        self.loop_dt = time.time() - t1
-        if self.loop_dt>self.sim_attr["period"]:
-            print("/!\ Loop duration exceeds timestep: {}".format(t2-t1))
+            # ----------------------------------------------------------------
+            # Update display
+            self.lines[0].set_data(self.cart.shape[0],
+                                   self.cart.shape[1])
+            self.lines[1].set_data(self.observer.shape[0],
+                                   self.observer.shape[1])
+            self.lines[3].set_text("t = %.1f" % (self.sim_t))
+            self.lines[4].set_text("x = %.2f" % self.cart.p[0])
+            self.lines[5].set_text("y = %.2f" % self.cart.p[1])
+            self.lines[6].set_text("theta = %.1f"%rad2deg(self.cart.p[2]))
+            if self.controller.type in ["closed-loop"]:
+                new_colours = draw_path(self.controller.path,
+                                        self.controller.wp_idx,
+                                        self.sim_complete)
+                self.lines[7].set_color(new_colours)
 
-        return self.lines
+            # ----------------------------------------------------------------
+            # Check for jam in the simulation
+            self.loop_dt = time.time() - t1
+            if self.loop_dt>self.sim_attr["period"]:
+                print("/!\ Loop duration exceeds timestep: {}".format(t2-t1))
+
+            return self.lines
