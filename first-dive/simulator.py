@@ -22,17 +22,17 @@ class Simulator:
           - controller: Object used to generate the commands to follow a given
                         reference (wheel speed sequence, path...)
           - observer: state estimator of the system
-          - sim_timeout: timeout after which the simulation will stop, whether or
-                         not the controller has reached the final target
-          - p_sim: simulation step
+          - sim_timeout: timeout after which the simulation will stop, whether
+                         or not the controller has reached the final target
+          - sim_p: simulation step
           - sim_speed: simulation speed
     '''
     def __init__(self,
                  cart,
                  controller=None,
                  observer=None,
-                 sim_timeout=300.,
-                 p_sim=1./20.,
+                 sim_timeout=100.,
+                 sim_p=1./20.,
                  sim_speed=1.):
 
 
@@ -55,8 +55,7 @@ class Simulator:
         # Simulation attributes
         self.sim_attr = {"speed": sim_speed,
                          "timeout": sim_timeout,
-                         "p_sim": p_sim,
-                         }
+                         "period": sim_p}
 
         self.t = time.time()
         self.sim_t = 0.
@@ -75,7 +74,7 @@ class Simulator:
 
         self.lines = (ax.plot([], [], color="b", lw=2)[0],
                       ax.plot([], [], color="r", lw=2)[0],
-                      ax.text(0.75, 0.950, "", transform=ax.transAxes),
+                      ax.text(0.75, 0.95, "", transform=ax.transAxes),
                       ax.text(0.02, 0.95, "", transform=ax.transAxes),
                       ax.text(0.02, 0.90, "", transform=ax.transAxes),
                       ax.text(0.02, 0.85, "", transform=ax.transAxes),
@@ -89,34 +88,40 @@ class Simulator:
 
         # ----------------------------------------------------------------
         # Launch simulation
-        interval = p_sim*1000
-        ani = FuncAnimation(fig,
-                            self.step,
-                            frames=300,
-                            interval=interval,
-                            blit=False)
+        interval = sim_p*1000
+        self.anim = FuncAnimation(fig,
+                                  self.step,
+                                  frames=300,
+                                  interval=interval,
+                                  blit=False)
         show()
 
     def step(self, i):
         ''' Simulation step
         '''
-        if not self.sim_complete:
+        if self.sim_complete:
+            self.anim._stop()
+        else:
             t1 = time.time()
 
             # ----------------------------------------------------------------
-            # Generate current control inputs
+            # [Control] Generate current control inputs
             u = self.controller.generate_cmd(self.observer.p, self.sim_t)
 
             # ----------------------------------------------------------------
-            # Compute the new system state
+            # [Simulate] Compute the new system state
             t = time.time()
             sim_dt = self.sim_attr["speed"]*(t - self.t)
-
-            self.cart.step(u, sim_dt) # Plant step
-            self.observer.update_est(self.cart.sense(),
-                                     sim_dt) # New state estimate
             self.t = t
             self.sim_t += sim_dt
+
+            self.cart.step(u, sim_dt) # Plant step
+
+            # ----------------------------------------------------------------
+            # [Observe] Compute the new estimate of the system state
+            self.observer.update_est(self.cart.sense(),
+                                     sim_dt) # New state estimate
+
 
             # ----------------------------------------------------------------
             # Check if simulation is finished
@@ -142,7 +147,7 @@ class Simulator:
             # ----------------------------------------------------------------
             # Check for jam in the simulation
             self.loop_dt = time.time() - t1
-            if self.loop_dt>self.sim_attr["p_sim"]:
+            if self.loop_dt>self.sim_attr["period"]:
                 print("/!\ Loop duration exceeds timestep: {}".format(t2-t1))
 
             return self.lines
